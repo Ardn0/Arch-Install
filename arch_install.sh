@@ -30,20 +30,30 @@ parted $INSTALL_DISK -- set 1 esp on
 parted $INSTALL_DISK -- mkpart root btrfs 512MB 100%
 
 mkfs.fat -F 32 -n boot $INSTALL_DISK"p1"
-mkfs.btrfs -L root $INSTALL_DISK"p2"
+mkfs.btrfs -f -L root $INSTALL_DISK"p2"
 
-mkdir -p /mnt/{boot,home}
 mount $INSTALL_DISK"p2" /mnt
+
+mkdir -p /mnt/boot
 mount $INSTALL_DISK"p1" /mnt/boot
 
 btrfs subvolume create /mnt/@
 btrfs subvolume create /mnt/@home
-umount /mnt
+umount -R /mnt
 
 mount -o subvol=@ $INSTALL_DISK"p2" /mnt
+
+mkdir -p /mnt/home
 mount -o subvol=@home $INSTALL_DISK"p2" /mnt/home
 
 pacstrap -K /mnt base linux linux-firmware
+
+genfstab -U /mnt >> /mnt/etc/fstab
+
+# CHROOT
+#
+
+arch-chroot /mnt
 
 packages=(
     amd-ucode
@@ -68,12 +78,6 @@ for package in ${packages[@]}; do
     yes | pacman -S "$package"
 done
 
-genfstab -U /mnt >> /mnt/etc/fstab
-
-# CHROOT
-#
-
-arch-chroot /mnt
 ln -sf /usr/share/zoneinfo/Europe/Prague /etc/localtime
 hwclock --systohc
 
