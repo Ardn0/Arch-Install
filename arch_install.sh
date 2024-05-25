@@ -33,15 +33,15 @@ mkfs.fat -F 32 -n boot /dev/$INSTALL_DISK"p1"
 mkfs.btrfs -L root /dev/$INSTALL_DISK"p2"
 
 mkdir -p /mnt/{boot,home}
-mount /dev/$INSTALL_DISK"p2" /mnt
-mount /dev/$INSTALL_DISK"p1" /mnt/boot
+mount $INSTALL_DISK"p2" /mnt
+mount $INSTALL_DISK"p1" /mnt/boot
 
 btrfs subvolume create /mnt/@
 btrfs subvolume create /mnt/@home
 umount /mnt
 
-mount -o subvol=@ /dev/$INSTALL_DISK"p2" /mnt
-mount -o subvol=@home /dev/$INSTALL_DISK"p2" /mnt/home
+mount -o subvol=@ $INSTALL_DISK"p2" /mnt
+mount -o subvol=@home $INSTALL_DISK"p2" /mnt/home
 
 pacstrap -K /mnt base linux linux-firmware
 
