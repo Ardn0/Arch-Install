@@ -56,11 +56,15 @@ genfstab -U /mnt >> /mnt/etc/fstab
 ARCH_CHROOT="arch-chroot /mnt /bin/bash -c"
 #arch-chroot /mnt
 
+$ARCH_CHROOT "echo "[multilib]" | tee -a /etc/pacman.conf"
+$ARCH_CHROOT "echo "Include = /etc/pacman.d/mirrorlist" | tee -a /etc/pacman.conf"
+$ARCH_CHROOT "echo "ParallelDownloads = 15" | tee -a /etc/pacman.conf"
+
 packages=(
     amd-ucode
     git
     mesa
-    lib32_mesa
+    lib32-mesa
     xf86-video-amdgpu
     vulkan-radeon
     lib32-vulkan-radeon
@@ -74,34 +78,31 @@ packages=(
     networkmanager
 )
 
-for package in ${packages[@]}; do
-    echo "Installing $package"
-    $ARCH_CHROOT yes | pacman -S "$package"
-done
+$ARCH_CHROOT "yes | pacman -S "${package[*]}""
 
-$ARCH_CHROOT ln -sf /usr/share/zoneinfo/Europe/Prague /etc/localtime
-$ARCH_CHROOT hwclock --systohc
+$ARCH_CHROOT "ln -sf /usr/share/zoneinfo/Europe/Prague /etc/localtime"
+$ARCH_CHROOT "hwclock --systohc"
 
-$ARCH_CHROOT sed -i '/^# *en_US.UTF-8 UTF-8/s/^# *//' /etc/locale.gen
-$ARCH_CHROOT locale-gen
+$ARCH_CHROOT "sed -i '/^# *en_US.UTF-8 UTF-8/s/^# *//' /etc/locale.gen"
+$ARCH_CHROOT "locale-gen"
 
-$ARCH_CHROOT echo "LANG=en_US.UTF-8" | tee /etc/locale.conf
-$ARCH_CHROOT echo "arch_laptop" | tee /etc/hostname
+$ARCH_CHROOT "echo "LANG=en_US.UTF-8" | tee /etc/locale.conf"
+$ARCH_CHROOT "echo "arch_laptop" | tee /etc/hostname"
 
 # SERVICES
 #
 
-$ARCH_CHROOT systemctl enable NetworkManager.service
+$ARCH_CHROOT "systemctl enable NetworkManager.service"
 
 # APP SETTINGS
 #
 
-$ARCH_CHROOT git config --global user.name  "Ardn0"
-$ARCH_CHROOT git config --global user.email "holomek.o@gmail.com"
+$ARCH_CHROOT "git config --global user.name  "Ardn0""
+$ARCH_CHROOT "git config --global user.email "holomek.o@gmail.com""
 
-$ARCH_CHROOT passwd
+$ARCH_CHROOT "passwd"
 
-$ARCH_CHROOT bootctl install
-$ARCH_CHROOT exit
+$ARCH_CHROOT "bootctl install"
+$ARCH_CHROOT "exit"
 umount -R /mnt
 reboot
