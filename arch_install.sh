@@ -29,8 +29,8 @@ parted $INSTALL_DISK -- mkpart ESP fat32 1MB 512MB
 parted $INSTALL_DISK -- set 1 esp on
 parted $INSTALL_DISK -- mkpart root btrfs 512MB 100%
 
-mkfs.fat -F 32 -n boot /dev/$INSTALL_DISK"p1"
-mkfs.btrfs -L root /dev/$INSTALL_DISK"p2"
+mkfs.fat -F 32 -n boot $INSTALL_DISK"p1"
+mkfs.btrfs -L root $INSTALL_DISK"p2"
 
 mkdir -p /mnt/{boot,home}
 mount $INSTALL_DISK"p2" /mnt
