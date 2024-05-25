@@ -35,7 +35,6 @@ mkfs.btrfs -f -L root $INSTALL_DISK"p2"
 mount $INSTALL_DISK"p2" /mnt
 
 mkdir -p /mnt/boot
-mount $INSTALL_DISK"p1" /mnt/boot
 
 btrfs subvolume create /mnt/@
 btrfs subvolume create /mnt/@home
@@ -43,8 +42,9 @@ umount -R /mnt
 
 mount -o subvol=@ $INSTALL_DISK"p2" /mnt
 
-mkdir -p /mnt/home
+mkdir -p /mnt/{home,boot}
 mount -o subvol=@home $INSTALL_DISK"p2" /mnt/home
+mount $INSTALL_DISK"p1" /mnt/boot
 
 pacstrap -K /mnt base linux linux-firmware
 
@@ -53,7 +53,8 @@ genfstab -U /mnt >> /mnt/etc/fstab
 # CHROOT
 #
 
-arch-chroot /mnt
+ARCH_CHROOT="arch-chroot /mnt /bin/bash -c"
+#arch-chroot /mnt
 
 packages=(
     amd-ucode
@@ -75,32 +76,32 @@ packages=(
 
 for package in ${packages[@]}; do
     echo "Installing $package"
-    yes | pacman -S "$package"
+    $ARCH_CHROOT yes | pacman -S "$package"
 done
 
-ln -sf /usr/share/zoneinfo/Europe/Prague /etc/localtime
-hwclock --systohc
+$ARCH_CHROOT ln -sf /usr/share/zoneinfo/Europe/Prague /etc/localtime
+$ARCH_CHROOT hwclock --systohc
 
-sed -i '/^# *en_US.UTF-8 UTF-8/s/^# *//' /etc/locale.gen
-locale-gen
+$ARCH_CHROOT sed -i '/^# *en_US.UTF-8 UTF-8/s/^# *//' /etc/locale.gen
+$ARCH_CHROOT locale-gen
 
-echo "LANG=en_US.UTF-8" | tee /etc/locale.conf
-echo "arch_laptop" | tee /etc/hostname
+$ARCH_CHROOT echo "LANG=en_US.UTF-8" | tee /etc/locale.conf
+$ARCH_CHROOT echo "arch_laptop" | tee /etc/hostname
 
 # SERVICES
 #
 
-systemctl enable NetworkManager.service
+$ARCH_CHROOT systemctl enable NetworkManager.service
 
 # APP SETTINGS
 #
 
-git config --global user.name  "Ardn0"
-git config --global user.email "holomek.o@gmail.com"
+$ARCH_CHROOT git config --global user.name  "Ardn0"
+$ARCH_CHROOT git config --global user.email "holomek.o@gmail.com"
 
-passwd
+$ARCH_CHROOT passwd
 
-bootctl install
-exit
+$ARCH_CHROOT bootctl install
+$ARCH_CHROOT exit
 umount -R /mnt
 reboot
