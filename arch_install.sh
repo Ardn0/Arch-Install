@@ -2,6 +2,7 @@
 
 PASSWORD=$1
 HOSTNAME=$2
+USER_PASSWORD=$3
 
 set -e # Exit if any command fail
 
@@ -106,17 +107,31 @@ $ARCH_CHROOT "systemctl enable NetworkManager.service"
 $ARCH_CHROOT "git config --global user.name Ardn0"
 $ARCH_CHROOT "git config --global user.email holomek.o@gmail.com"
 
+$ARCH_CHROOT "touch /etc/modprobe.d/disable_modules.conf"
+$ARCH_CHROOT "echo blacklist pcspkr | tee -a /etc/modprobe.d/disable_modules.conf" 
+$ARCH_CHROOT "echo blacklist snd_pcsp | tee -a /etc/modprobe.d/disable_modules.conf" 
+$ARCH_CHROOT "echo blacklist uvcvideo | tee -a /etc/modprobe.d/disable_modules.conf" 
+$ARCH_CHROOT "echo blacklist btusb | tee -a /etc/modprobe.d/disable_modules.conf" 
+$ARCH_CHROOT "echo blacklist bluetooth | tee -a /etc/modprobe.d/disable_modules.conf" 
+
+$ARCH_CHROOT "useradd -m ondra"
+$ARCH_CHROOT "echo ondra:$USER_PASSWORD | chpasswd"
+$ARCH_CHROOT "usermod -a -G wheel,audio,input,storage,video,network ondra"
+
+# FINISHING
+#
+
 $ARCH_CHROOT "echo root:$PASSWORD | chpasswd"
 
 $ARCH_CHROOT "bootctl install"
 
 entry_file="/boot/loader/entries/$(date +"%d-%m-%Y_%H-%M-%S")_linux.conf"
 
-$ARCH_CHROOT "echo title Arch Linux | tee $entry_file"
-$ARCH_CHROOT "echo linux /vmlinuz-linux | tee $entry_file"
-$ARCH_CHROOT "echo initrd /initramfs-linux.img | tee $entry_file"
-$ARCH_CHROOT "echo initrd /amd-ucode.img | tee $entry_file"
-$ARCH_CHROOT "echo options root=UUID=$(blkid -s PARTUUID -o value $INSTALL_DISK"p2") rw rootfstype=btrfs | tee $entry_file"
+$ARCH_CHROOT "echo title Arch Linux | tee -a $entry_file"
+$ARCH_CHROOT "echo linux /vmlinuz-linux | tee -a $entry_file"
+$ARCH_CHROOT "echo initrd /initramfs-linux.img | tee -a $entry_file"
+$ARCH_CHROOT "echo initrd /amd-ucode.img | tee -a $entry_file"
+$ARCH_CHROOT "echo options root=UUID=$(blkid -s PARTUUID -o value $INSTALL_DISK"p2") rw rootfstype=btrfs rootflags=subvol=@ | tee -a $entry_file"
 
 $ARCH_CHROOT "exit"
 umount -R /mnt
