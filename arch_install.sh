@@ -1,5 +1,7 @@
 #!/bin/bash
 
+PASSWORD=$1
+
 set -e # Exit if any command fail
 
 DISK=($(ls /dev/ | grep -E 'nvme[0-9]+n[0-9]$'))
@@ -58,6 +60,7 @@ ARCH_CHROOT="arch-chroot /mnt /bin/bash -c"
 
 $ARCH_CHROOT "echo "[multilib]" | tee -a /etc/pacman.conf"
 $ARCH_CHROOT "echo "Include = /etc/pacman.d/mirrorlist" | tee -a /etc/pacman.conf"
+$ARCH_CHROOT "echo "[options]" | tee -a /etc/pacman.conf"
 $ARCH_CHROOT "echo "ParallelDownloads = 15" | tee -a /etc/pacman.conf"
 
 packages=(
@@ -78,7 +81,7 @@ packages=(
     networkmanager
 )
 
-$ARCH_CHROOT "yes | pacman -S "${package[*]}""
+$ARCH_CHROOT "yes | pacman -S "${packages[*]}""
 
 $ARCH_CHROOT "ln -sf /usr/share/zoneinfo/Europe/Prague /etc/localtime"
 $ARCH_CHROOT "hwclock --systohc"
@@ -100,9 +103,24 @@ $ARCH_CHROOT "systemctl enable NetworkManager.service"
 $ARCH_CHROOT "git config --global user.name  "Ardn0""
 $ARCH_CHROOT "git config --global user.email "holomek.o@gmail.com""
 
-$ARCH_CHROOT "passwd"
+$ARCH_CHROOT ""root:$PASSWORD" | chpasswd"
+echo "Root password changed"
 
 $ARCH_CHROOT "bootctl install"
+
+create_entry() {
+    local kernel="/vmlinuz-linux"
+    local initrd="/initramfs-linux.img"
+    local entry_file="/boot/loader/entries/$(date +"%d.%m.%Y_%H:%M:%S")linux.conf"
+
+    echo "title Arch Linux" > "$entry_file"
+    echo "linux $kernel" >> "$entry_file"
+    echo "initrd $initrd" >> "$entry_file"
+    echo "options root=UUID=$(blkid -s UUID -o value $INSTALL_DISK"p1") rw quiet" >> "$entry_file"
+}
+
+create_entry
+
 $ARCH_CHROOT "exit"
 umount -R /mnt
 reboot
