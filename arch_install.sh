@@ -118,11 +118,6 @@ $ARCH_CHROOT "useradd -m ondra"
 $ARCH_CHROOT "echo ondra:$USER_PASSWORD | chpasswd"
 $ARCH_CHROOT "usermod -a -G wheel,audio,input,storage,video,network ondra"
 
-$ARCH_CHROOT "mkdir /home/ondra/Downloads"
-$ARCH_CHROOT "cd /home/ondra/Downloads/ && git clone https://aur.archlinux.org/yay.git"
-$ARCH_CHROOT "cd yay && yes | makepkg -si && cd .."
-$ARCH_CHROOT "rm -rf yay/"
-
 # FINISHING
 #
 
