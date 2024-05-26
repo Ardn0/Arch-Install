@@ -131,7 +131,7 @@ $ARCH_CHROOT "echo title Arch Linux | tee -a $entry_file"
 $ARCH_CHROOT "echo linux /vmlinuz-linux | tee -a $entry_file"
 $ARCH_CHROOT "echo initrd /initramfs-linux.img | tee -a $entry_file"
 $ARCH_CHROOT "echo initrd /amd-ucode.img | tee -a $entry_file"
-$ARCH_CHROOT "echo options root=UUID=$(blkid -s PARTUUID -o value $INSTALL_DISK"p2") rw rootfstype=btrfs rootflags=subvol=@ | tee -a $entry_file"
+$ARCH_CHROOT "echo options root=UUID=$(blkid -s UUID -o value $INSTALL_DISK"p2") rw rootfstype=btrfs rootflags=subvol=@ | tee -a $entry_file"
 
 $ARCH_CHROOT "exit"
 umount -R /mnt
