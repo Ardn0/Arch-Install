@@ -1,6 +1,7 @@
 #!/bin/bash
 
 PASSWORD=$1
+HOSTNAME=$2
 
 set -e # Exit if any command fail
 
@@ -81,7 +82,7 @@ packages=(
     networkmanager
 )
 
-$ARCH_CHROOT "yes | pacman -S "${packages[*]}""
+$ARCH_CHROOT "yes | pacman -S ${packages[*]}"
 
 $ARCH_CHROOT "ln -sf /usr/share/zoneinfo/Europe/Prague /etc/localtime"
 $ARCH_CHROOT "hwclock --systohc"
@@ -90,7 +91,7 @@ $ARCH_CHROOT "sed -i '/^# *en_US.UTF-8 UTF-8/s/^# *//' /etc/locale.gen"
 $ARCH_CHROOT "locale-gen"
 
 $ARCH_CHROOT "echo "LANG=en_US.UTF-8" | tee /etc/locale.conf"
-$ARCH_CHROOT "echo "arch_laptop" | tee /etc/hostname"
+$ARCH_CHROOT "echo $HOSTNAME | tee /etc/hostname"
 
 # SERVICES
 #
@@ -108,18 +109,14 @@ echo "Root password changed"
 
 $ARCH_CHROOT "bootctl install"
 
-create_entry() {
-    local kernel="/vmlinuz-linux"
-    local initrd="/initramfs-linux.img"
-    local entry_file="/boot/loader/entries/$(date +"%d.%m.%Y_%H:%M:%S")linux.conf"
+kernel="/boot/vmlinuz-linux"
+initrd="/boot/initramfs-linux.img"
+entry_file="/boot/loader/entries/$(date +"%d-%m-%Y_%H-%M-%S")_linux.conf"
 
-    echo "title Arch Linux" > "$entry_file"
-    echo "linux $kernel" >> "$entry_file"
-    echo "initrd $initrd" >> "$entry_file"
-    echo "options root=UUID=$(blkid -s UUID -o value $INSTALL_DISK"p1") rw quiet" >> "$entry_file"
-}
-
-create_entry
+$ARCH_CHROOT "echo "title Arch Linux" | tee $entry_file"
+$ARCH_CHROOT "echo "linux $kernel" | tee $entry_file"
+$ARCH_CHROOT "echo "initrd $initrd" | tee $entry_file"
+$ARCH_CHROOT "echo "options root=UUID=$(blkid -s UUID -o value $INSTALL_DISK"p1") rw quiet" | tee "$entry_file""
 
 $ARCH_CHROOT "exit"
 umount -R /mnt
