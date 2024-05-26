@@ -59,10 +59,12 @@ genfstab -U /mnt >> /mnt/etc/fstab
 ARCH_CHROOT="arch-chroot /mnt /bin/bash -c"
 #arch-chroot /mnt
 
-$ARCH_CHROOT "echo "[multilib]" | tee -a /etc/pacman.conf"
-$ARCH_CHROOT "echo "Include = /etc/pacman.d/mirrorlist" | tee -a /etc/pacman.conf"
-$ARCH_CHROOT "echo "[options]" | tee -a /etc/pacman.conf"
-$ARCH_CHROOT "echo "ParallelDownloads = 15" | tee -a /etc/pacman.conf"
+$ARCH_CHROOT "echo [multilib] | tee -a /etc/pacman.conf"
+$ARCH_CHROOT "echo Include = /etc/pacman.d/mirrorlist | tee -a /etc/pacman.conf"
+$ARCH_CHROOT "echo [options] | tee -a /etc/pacman.conf"
+$ARCH_CHROOT "echo ParallelDownloads = 15 | tee -a /etc/pacman.conf"
+
+$ARCH_CHROOT "pacman -Sy"
 
 packages=(
     amd-ucode
@@ -90,7 +92,7 @@ $ARCH_CHROOT "hwclock --systohc"
 $ARCH_CHROOT "sed -i '/^# *en_US.UTF-8 UTF-8/s/^# *//' /etc/locale.gen"
 $ARCH_CHROOT "locale-gen"
 
-$ARCH_CHROOT "echo "LANG=en_US.UTF-8" | tee /etc/locale.conf"
+$ARCH_CHROOT "echo LANG=en_US.UTF-8 | tee /etc/locale.conf"
 $ARCH_CHROOT "echo $HOSTNAME | tee /etc/hostname"
 
 # SERVICES
@@ -101,22 +103,20 @@ $ARCH_CHROOT "systemctl enable NetworkManager.service"
 # APP SETTINGS
 #
 
-$ARCH_CHROOT "git config --global user.name  "Ardn0""
-$ARCH_CHROOT "git config --global user.email "holomek.o@gmail.com""
+$ARCH_CHROOT "git config --global user.name Ardn0"
+$ARCH_CHROOT "git config --global user.email holomek.o@gmail.com"
 
-$ARCH_CHROOT ""root:$PASSWORD" | chpasswd"
-echo "Root password changed"
+$ARCH_CHROOT "echo root:$PASSWORD | chpasswd"
 
 $ARCH_CHROOT "bootctl install"
 
-kernel="/boot/vmlinuz-linux"
-initrd="/boot/initramfs-linux.img"
 entry_file="/boot/loader/entries/$(date +"%d-%m-%Y_%H-%M-%S")_linux.conf"
 
-$ARCH_CHROOT "echo "title Arch Linux" | tee $entry_file"
-$ARCH_CHROOT "echo "linux $kernel" | tee $entry_file"
-$ARCH_CHROOT "echo "initrd $initrd" | tee $entry_file"
-$ARCH_CHROOT "echo "options root=UUID=$(blkid -s UUID -o value $INSTALL_DISK"p1") rw quiet" | tee "$entry_file""
+$ARCH_CHROOT "echo title Arch Linux | tee $entry_file"
+$ARCH_CHROOT "echo linux /vmlinuz-linux | tee $entry_file"
+$ARCH_CHROOT "echo initrd /initramfs-linux.img | tee $entry_file"
+$ARCH_CHROOT "echo initrd /amd-ucode.img | tee $entry_file"
+$ARCH_CHROOT "echo options root=UUID=$(blkid -s PARTUUID -o value $INSTALL_DISK"p2") rw rootfstype=btrfs | tee $entry_file"
 
 $ARCH_CHROOT "exit"
 umount -R /mnt
