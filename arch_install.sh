@@ -68,21 +68,29 @@ $ARCH_CHROOT "echo ParallelDownloads = 15 | tee -a /etc/pacman.conf"
 $ARCH_CHROOT "pacman -Sy"
 
 packages=(
-    amd-ucode
-    git
-    mesa
-    lib32-mesa
-    xf86-video-amdgpu
-    vulkan-radeon
-    lib32-vulkan-radeon
-    libva-mesa-driver
-    lib32-libva-mesa-driver
-    neovim
-    htop
-    lm_sensors
-    pipewire
-    lib32-pipewire
-    networkmanager
+	amd-ucode
+	git
+	mesa
+	lib32-mesa
+	xf86-video-amdgpu
+	vulkan-radeon
+	lib32-vulkan-radeon
+	libva-mesa-driver
+	lib32-libva-mesa-driver
+	neovim
+	htop
+	lm_sensors
+	pipewire
+	lib32-pipewire
+	networkmanager
+	sudo
+	bash-completion
+	base-devel
+	fakeroot
+	debugedit
+	alacritty
+	tmux
+	ttf-ubuntu-font-family
 )
 
 $ARCH_CHROOT "yes | pacman -S ${packages[*]}"
