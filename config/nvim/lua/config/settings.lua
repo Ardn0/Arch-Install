@@ -13,6 +13,9 @@ vim.opt.splitbelow = true
 
 vim.opt.tabstop = 4
 vim.opt.shiftwidth = 4
+vim.opt.softtabstop = 4
+vim.opt.expandtab = true
+vim.opt.smartindent = true
 
 vim.opt.list = true
 vim.opt.listchars = { tab = '» ', trail = '·', nbsp = '␣' }
@@ -24,6 +27,7 @@ vim.opt.termguicolors = true
 vim.cmd('colorscheme rose-pine')
 
 vim.opt.hlsearch = true
+vim.opt.incsearch = true
 vim.keymap.set('n', '<Esc>', '<cmd>nohlsearch<CR>')
 
 vim.keymap.set('n', '<C-S-Left>', '<C-w><C-h>', { desc = 'Move focus to the left window' })
